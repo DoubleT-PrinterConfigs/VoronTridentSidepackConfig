@@ -81,35 +81,42 @@ cat << "EOF"
 EOF
 
 
-### Flash the Fly-sht36v2 via CAN Boot...
-#echo "Start processing for the Fly-sht36v2..."
-make clean KCONFIG_CONFIG=config.sht36v2.7a268842af31
-make menuconfig KCONFIG_CONFIG=config.sht36v2.7a268842af31
-make -j4 KCONFIG_CONFIG=config.sht36v2.7a268842af31
-python3 ~/CanBoot/scripts/flash_can.py -i can0 -f ~/klipper/out/klipper.bin -u 7a268842af31
+### Flash the SB2040 via CAN Boot...
+echo "Start processing for the Fly-sht36..."
+make clean KCONFIG_CONFIG=config.sht36v2.a17924a7ad5d
+make menuconfig KCONFIG_CONFIG=config.sht36v2.a17924a7ad5d
+make -j4 KCONFIG_CONFIG=config.sht36v2.a17924a7ad5d
+python3 ~/CanBoot/scripts/flash_can.py -i can0 -f ~/klipper/out/klipper.bin -u a17924a7ad5d
 
 echo
 echo ----------------------------------------------------------
 echo
 
-cat << "EOF" 
+cat << "EOF"
 ############################################################################################################################
  _____ _             _____                       ____   ___  _  _    ___
 |_   _(_)_ __  _   _|  ___|_ _ _ __    _ __ _ __|___ \ / _ \| || |  / _ \
   | | | | '_ \| | | | |_ / _` | '_ \  | '__| '_ \ __) | | | | || |_| | | |
   | | | | | | | |_| |  _| (_| | | | | | |  | |_) / __/| |_| |__   _| |_| |
   |_| |_|_| |_|\__, |_|  \__,_|_| |_| |_|  | .__/_____|\___/   |_|  \___/
-               |___/                       |_|                     
+               |___/                       |_|
 ############################################################################################################################
-EOF  
+EOF
 
 
 ### Flash the TinyFan RP2040 via CAN Boot...
-#echo "Start processing for the SB2040..."
-#make clean KCONFIG_CONFIG=config.tinyfan
-#make menuconfig KCONFIG_CONFIG=config.tinyfan
-#make -j4 KCONFIG_CONFIG=config.tinyfan
+echo "Start processing for the TinyFan rp2040..."
+make clean KCONFIG_CONFIG=config.tinyfan
+make menuconfig KCONFIG_CONFIG=config.tinyfan
+make -j4 KCONFIG_CONFIG=config.tinyfan
 make flash KCONFIG_CONFIG=config.tinyfan FLASH_DEVICE=/dev/serial/by-id/usb-Klipper_rp2040_E66138935F422C28-if00
+# Sometimes the Octopus is stuck in DFU mode...
+if [ $? -eq 0 ]; then
+   echo "*** Successfully flashed TinyFan rp2040"
+else
+   echo "*** Unable to flash via serial path, attempting via USB device ID..."
+   make flash KCONFIG_CONFIG=config.tinyfan FLASH_DEVICE=/dev/serial/by-id/usb-Klipper_rp2040_E66138935F422C28-if00
+fi
 
 echo "Starting Klipper..."
 sudo service klipper start
